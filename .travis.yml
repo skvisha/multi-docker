@@ -3,7 +3,7 @@ services:
     - docker
 before_install:
     # run the tests that are inside client project
-    - docker build -t skvisha/react-test -f ./client/Dockerfile.dev ./
+    - docker build -t skvisha/react-test -f ./client/Dockerfile.dev ./client
 
 #primary test running section
 script:
