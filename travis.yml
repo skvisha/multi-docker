@@ -1,0 +1,25 @@
+sudo: required
+services:
+    - docker
+before_install:
+    # run the tests that are inside client project
+    - docker build -t skvisha/react-test -f ./client/Dockerfile.dev ./
+
+#primary test running section
+script:
+  - docker run skvisha/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t skvisha/multi-client ./client
+  - docker build -t skvisha/multi-nginx ./nginx
+  - docker build -t skvisha/multi-server ./server
+  - docker build -t skvisha/multi-worker ./worker
+  # login to docker CLI
+  - echo "$DOCKER_PSWD" | docker login -u "$DOCKER_ID" --password-stdin
+  # take these images and push them to docker hub
+  - docker push skvisha/multi-client
+  - docker push skvisha/multi-nginx
+  - docker push skvisha/multi-server
+  - docker push skvisha/multi-worker
+
+  
