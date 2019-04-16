@@ -1,0 +1,50 @@
+version : '3'
+services:
+  postgres:
+    image: 'postgres:latest'
+  redis:
+    image: 'redis:latest'
+  nginx:
+      #it must always be on, so restart policy is to restart everytime it crashes
+      restart: always 
+      build:
+        dockerfile: Dockerfile.dev
+        context:  ./nginx
+      ports: 
+      - "3050:80"
+  api: #its actually server module
+    build: 
+      dockerfile: Dockerfile.dev
+      #use server directory to build image
+      context: ./server
+    volumes:
+      - /app/node_modules #when accessing app/node_modules,access inside docker,dont map to external folder
+      - ./server:/app #when accessing app folder ,you basically access current dir
+    environment:
+      #these default values are lookable in dockerhub documentation section of each image
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PGUSER=postgres
+      - PGHOST=postgres
+      - PGDATABASE=postgres
+      - PGPASSWORD=postgres_password
+      - PGPORT=5432
+  client:
+      build: 
+        dockerfile: Dockerfile.dev
+        #use client directory to build image
+        context: ./client
+      volumes:
+        - /app/node_modules
+        - ./client:/app
+  worker:
+      build: 
+        dockerfile: Dockerfile.dev
+        #use worker directory to build image
+        context: ./worker
+      volumes:
+        - /app/node_modules
+        - ./worker:/app
+      environment:
+        - REDIS_HOST=redis
+        - REDIS_PORT=6379
